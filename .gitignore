@@ -1,0 +1,17 @@
+# Environment variables - keeps your API key safe
+.env
+
+# Virtual environment - no need to upload
+venv/
+
+# Uploaded patient files - private data
+uploads/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Windows files
+Thumbs.db
+desktop.ini

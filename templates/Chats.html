@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Chats — MediAgent{% endblock %}
+{% block page_title %}💬 Conversation History{% endblock %}
+{% block page_sub %}All your questions and AI responses{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+
+    <div style="font-size:13px; color:var(--text-muted);">
+        {{ chat_history|length }} message(s) total
+    </div>
+
+    {% if chat_history %}
+    <a
+        href="/clear_chats"
+        class="btn"
+        style="
+            background:var(--emergency);
+            color:#b91c1c;
+            border:1px solid var(--emergency-border);
+            font-size:12px;
+            padding:7px 14px;
+        "
+    >
+        🗑 Clear All
+    </a>
+    {% endif %}
+
+</div>
+
+<div class="card">
+
+    <div class="card-header">
+        <div class="card-title">
+            💬 All Chats
+        </div>
+    </div>
+
+    <div
+        style="
+            padding:16px 20px;
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+            min-height:200px;
+        "
+    >
+
+        {% if chat_history %}
+
+            {% for chat in chat_history %}
+
+            <div
+                style="
+                    display:flex;
+                    flex-direction:column;
+                    gap:8px;
+                    padding-bottom:14px;
+                    border-bottom:1px solid var(--border);
+                "
+            >
+
+                <!-- User Message -->
+                <div style="text-align:right;">
+
+                    <div
+                        style="
+                            font-size:11px;
+                            color:var(--text-muted);
+                            margin-bottom:4px;
+                        "
+                    >
+                        🧑 You
+                    </div>
+
+                    <div
+                        style="
+                            display:inline-block;
+                            padding:11px 14px;
+                            border-radius:10px;
+                            border-bottom-right-radius:3px;
+                            background:var(--accent);
+                            color:white;
+                            font-size:13.5px;
+                            line-height:1.6;
+                            max-width:80%;
+                        "
+                    >
+                        {{ chat.user }}
+                    </div>
+
+                </div>
+
+                <!-- AI Message -->
+                <div>
+
+                    <div
+                        style="
+                            font-size:11px;
+                            color:var(--text-muted);
+                            margin-bottom:4px;
+                        "
+                    >
+                        🤖 AI Agent
+                    </div>
+
+                    <div
+                        style="
+                            display:inline-block;
+                            padding:11px 14px;
+                            border-radius:10px;
+                            border-bottom-left-radius:3px;
+
+                            background:
+                            {% if 'EMERGENCY' in chat.bot %}
+                                var(--emergency)
+                            {% else %}
+                                var(--bg)
+                            {% endif %};
+
+                            border:1px solid
+                            {% if 'EMERGENCY' in chat.bot %}
+                                var(--emergency-border)
+                            {% else %}
+                                var(--border)
+                            {% endif %};
+
+                            color:
+                            {% if 'EMERGENCY' in chat.bot %}
+                                #b91c1c
+                            {% else %}
+                                var(--text-primary)
+                            {% endif %};
+
+                            font-size:13.5px;
+                            line-height:1.6;
+                            white-space:pre-wrap;
+                            max-width:80%;
+                        "
+                    >
+                        {{ chat.bot }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    💬
+                </div>
+
+                <p>No conversations yet.</p>
+
+                <p>
+                    Go to
+                    <a href="/" style="color:var(--accent);">
+                        Home
+                    </a>
+                    and ask a question.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+    {% if patient_name %}
+
+    <div
+        style="
+            padding:16px 20px;
+            border-top:1px solid var(--border);
+        "
+    >
+
+        <form
+            method="POST"
+            action="/"
+            style="
+                display:flex;
+                gap:10px;
+            "
+        >
+
+            <input
+                type="text"
+                name="message"
+                placeholder="Ask about medicines, diet, symptoms..."
+                required
+                style="
+                    flex:1;
+                    padding:11px 16px;
+                    border:1.5px solid var(--border);
+                    border-radius:10px;
+                    font-family:'DM Sans',sans-serif;
+                    font-size:14px;
+                    outline:none;
+                    background:var(--bg);
+                "
+            >
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Send ➤
+            </button>
+
+        </form>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

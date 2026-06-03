@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Follow-Ups — MediAgent{% endblock %}
+{% block page_title %}📅 Follow-Up Care{% endblock %}
+{% block page_sub %}Scheduled appointments and recovery instructions{% endblock %}
+
+{% block content %}
+
+{% if patient_name %}
+
+<!-- Follow-Up Date -->
+<div class="card">
+
+    <div class="card-header">
+        <div class="card-title">
+            📅 Scheduled Appointment
+        </div>
+    </div>
+
+    <div class="card-body">
+
+        {% if follow_up %}
+
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:20px;
+                padding:20px;
+                background:var(--accent-light);
+                border-radius:var(--radius-sm);
+                border:1px solid var(--accent);
+            "
+        >
+
+            <div style="font-size:40px;">
+                📅
+            </div>
+
+            <div>
+
+                <div
+                    style="
+                        font-size:12px;
+                        font-weight:600;
+                        text-transform:uppercase;
+                        letter-spacing:0.8px;
+                        color:var(--accent);
+                        margin-bottom:4px;
+                    "
+                >
+                    Follow-Up Date
+                </div>
+
+                <div
+                    style="
+                        font-size:24px;
+                        font-weight:600;
+                        font-family:'Playfair Display', serif;
+                        color:var(--accent-dark);
+                    "
+                >
+                    {{ follow_up }}
+                </div>
+
+                <div
+                    style="
+                        font-size:13px;
+                        color:var(--text-muted);
+                        margin-top:4px;
+                    "
+                >
+                    Make sure to keep this appointment
+                </div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                📅
+            </div>
+
+            <p>
+                No follow-up date found in the discharge summary.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- Recovery Checklist -->
+<div class="card">
+
+    <div class="card-header">
+        <div class="card-title">
+            ✅ Recovery Checklist
+        </div>
+    </div>
+
+    <div class="card-body">
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:10px;
+            "
+        >
+
+            {% set checks = [
+                ('Take medications as prescribed', med_count > 0, '💊'),
+                ('Follow diet instructions', diet != '', '🥗'),
+                ('Attend follow-up appointment', follow_up != '', '🏥'),
+                ('Avoid strenuous activities', True, '🛌'),
+                ('Keep wound/surgical site clean', True, '🩹'),
+                ('Watch for emergency symptoms', True, '⚠️')
+            ] %}
+
+            {% for label, done, icon in checks %}
+
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:12px;
+                    padding:12px 16px;
+                    border-radius:var(--radius-sm);
+                    border:1px solid {% if done %}var(--success-border){% else %}var(--border){% endif %};
+                    background:{% if done %}var(--success){% else %}var(--bg){% endif %};
+                "
+            >
+
+                <span style="font-size:18px;">
+                    {{ icon }}
+                </span>
+
+                <span
+                    style="
+                        flex:1;
+                        font-size:13px;
+                        font-weight:500;
+                        color:var(--text-primary);
+                    "
+                >
+                    {{ label }}
+                </span>
+
+                <div
+                    style="
+                        width:22px;
+                        height:22px;
+                        border-radius:50%;
+                        background:{% if done %}#22c55e{% else %}transparent{% endif %};
+                        border:2px solid {% if done %}#22c55e{% else %}var(--border){% endif %};
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        color:white;
+                        font-size:12px;
+                    "
+                >
+                    {% if done %}✓{% endif %}
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Diet -->
+{% if diet %}
+
+<div class="card">
+
+    <div class="card-header">
+        <div class="card-title">
+            🥗 Diet Instructions
+        </div>
+    </div>
+
+    <div class="card-body">
+
+        <pre
+            style="
+                white-space:pre-wrap;
+                font-family:'DM Sans', sans-serif;
+                font-size:13.5px;
+                line-height:1.8;
+                color:var(--text-primary);
+                background:var(--bg);
+                padding:16px;
+                border-radius:var(--radius-sm);
+            "
+        >{{ diet }}</pre>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% else %}
+
+<div class="card">
+
+    <div class="card-body">
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                📅
+            </div>
+
+            <p>
+                No follow-up information available.
+            </p>
+
+            <p style="margin-top:12px;">
+                <a href="/" class="btn btn-primary">
+                    ⬆ Upload Summary
+                </a>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% block title %}Home — MediAgent{% endblock %}
+
+{% block page_title %}
+{% set hour = now.hour %}
+{% if hour < 12 %}Good morning{% elif hour < 17 %}Good afternoon{% else %}Good evening{% endif %}{% if patient_name %}, <em>{{ patient_name }}</em>{% endif %} 👋
+{% endblock %}
+
+{% block page_sub %}Here's your post-discharge overview{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-label">Messages</div>
+        <div class="stat-value">{{ chat_history|length if chat_history else 0 }}</div>
+        <div class="stat-sub">AI conversations</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">💊</div>
+        <div class="stat-label">Medications</div>
+        <div class="stat-value">{{ med_count if med_count else 0 }}</div>
+        <div class="stat-sub">Prescribed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-label">Follow-Up</div>
+        <div class="stat-value" style="font-size:16px;padding-top:6px;line-height:1.3;">{{ follow_up if follow_up else '—' }}</div>
+        <div class="stat-sub">Next appointment</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🔔</div>
+        <div class="stat-label">Alerts</div>
+        <div class="stat-value">{{ emergency_count if emergency_count else 0 }}</div>
+        <div class="stat-sub">Emergency detected</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span style="width:28px;height:28px;border-radius:8px;background:#eff6ff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">📈</span>
+            Recovery Tracker
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;color:var(--text-3);">{{ recovery_progress }}% complete</span>
+            <span class="tag {% if recovery_progress >= 80 %}tag-green{% elif recovery_progress >= 40 %}tag-amber{% else %}tag-red{% endif %}">
+                {% if recovery_progress >= 80 %}On Track{% elif recovery_progress >= 40 %}In Progress{% else %}Just Started{% endif %}
+            </span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:8px;">
+                <span>Overall Progress</span>
+                <span style="font-weight:700;color:{% if recovery_progress >= 80 %}var(--green){% elif recovery_progress >= 40 %}var(--amber){% else %}var(--red){% endif %};">{{ recovery_progress }}%</span>
+            </div>
+            <div style="height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--border);">
+                <div style="width:{{ recovery_progress }}%;height:100%;border-radius:99px;transition:width 0.8s ease;background:{% if recovery_progress >= 80 %}linear-gradient(90deg,#10b981,#34d399){% elif recovery_progress >= 40 %}linear-gradient(90deg,#f59e0b,#fbbf24){% else %}linear-gradient(90deg,#ef4444,#f87171){% endif %};"></div>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+            {% set steps = [
+                ('📋','Summary', patient_name),
+                ('💊','Medicines', med_count > 0),
+                ('🥗','Diet', diet),
+                ('📅','Follow-Up', follow_up),
+                ('💬','Chat', chat_history|length > 0)
+            ] %}
+            {% for icon, label, done in steps %}
+            <div style="text-align:center;padding:14px 8px;border-radius:var(--radius-sm);border:1px solid {% if done %}var(--green-border){% else %}var(--border){% endif %};background:{% if done %}var(--green-bg){% else %}var(--surface-2){% endif %};">
+                <div style="font-size:20px;margin-bottom:6px;">{{ icon }}</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:3px;">{{ label }}</div>
+                <div style="font-size:11px;font-weight:700;color:{% if done %}var(--green){% else %}var(--text-3){% endif %};">
+                    {% if done %}Done{% else %}Pending{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.2fr;gap:22px;align-items:start;">
+
+    <div style="display:flex;flex-direction:column;gap:22px;">
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="width:28px;height:28px;border-radius:8px;background:#eff6ff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">📄</span>
+                    Upload Discharge Summary
+                </div>
+                {% if upload_time %}<span class="tag tag-green">Uploaded</span>{% endif %}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/upload" enctype="multipart/form-data">
+                    <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:28px 20px;text-align:center;background:var(--surface-2);">
+                        <div style="font-size:32px;margin-bottom:10px;">📁</div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:4px;">Drop your file here</div>
+                        <div style="font-size:11px;color:var(--text-3);margin-bottom:16px;">Supports <strong>.txt</strong> and <strong>.pdf</strong></div>
+                        <div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;">
+                            <input type="file" name="file" accept=".txt,.pdf" required style="font-size:12px;color:var(--text-2);">
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="width:28px;height:28px;border-radius:8px;background:#f0fdf4;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">👤</span>
+                    Patient Summary
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <div class="info-item">
+                        <div class="info-icon">🧑</div>
+                        <div>
+                            <div class="info-label">Patient Name</div>
+                            <div class="info-value">{{ patient_name if patient_name else '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">🩺</div>
+                        <div>
+                            <div class="info-label">Diagnosis</div>
+                            <div class="info-value">{{ diagnosis if diagnosis else '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">⚕️</div>
+                        <div>
+                            <div class="info-label">Procedure</div>
+                            <div class="info-value">{{ procedure if procedure else '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div>
+                            <div class="info-label">Follow-Up Date</div>
+                            <div class="info-value">{{ follow_up if follow_up else '—' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="width:28px;height:28px;border-radius:8px;background:#fff7ed;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">💊</span>
+                    Medicine Reminders
+                </div>
+                {% if med_list %}
+                <a href="/reset_reminders" class="btn btn-ghost" style="font-size:11px;padding:5px 10px;">Reset All</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if med_list %}
+                    {% for med in med_list %}
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid {% if med_reminders.get(med.name) %}var(--green-border){% else %}var(--border){% endif %};background:{% if med_reminders.get(med.name) %}var(--green-bg){% else %}var(--surface-2){% endif %};margin-bottom:8px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:32px;height:32px;border-radius:8px;background:white;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">💊</div>
+                            <div>
+                                <div style="font-size:13px;font-weight:600;color:{% if med_reminders.get(med.name) %}var(--green){% else %}var(--text-1){% endif %};">{{ med.name }}</div>
+                                {% if med.schedule %}<div style="font-size:11px;color:var(--text-3);">{{ med.schedule }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <a href="/toggle_reminder/{{ loop.index0 }}" style="padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;background:{% if med_reminders.get(med.name) %}var(--green){% else %}var(--accent){% endif %};color:white;">
+                            {% if med_reminders.get(med.name) %}Taken{% else %}Mark Taken{% endif %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" style="padding:24px;">
+                        <div class="empty-icon">💊</div>
+                        <p>Upload a discharge summary to see your medications.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="width:28px;height:28px;border-radius:8px;background:#f0fdf4;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">✅</span>
+                    Recovery To-Do
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="todo-item">
+                    <div class="todo-check-done">✓</div>
+                    <span>Upload discharge summary</span>
+                </div>
+                <div class="todo-item">
+                    {% if med_count > 0 %}<div class="todo-check-done">✓</div>{% else %}<div class="todo-check-empty"></div>{% endif %}
+                    <span>Review medications</span>
+                </div>
+                <div class="todo-item">
+                    {% if follow_up %}<div class="todo-check-done">✓</div>{% else %}<div class="todo-check-empty"></div>{% endif %}
+                    <span>Confirm follow-up appointment</span>
+                </div>
+                <div class="todo-item" style="margin-bottom:0;">
+                    {% if chat_history|length > 0 %}<div class="todo-check-done">✓</div>{% else %}<div class="todo-check-empty"></div>{% endif %}
+                    <span>Ask AI about diet plan</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:22px;position:sticky;top:80px;">
+
+        <div class="card" style="display:flex;flex-direction:column;">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="width:28px;height:28px;border-radius:8px;background:#eff6ff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">💬</span>
+                    AI Assistant
+                </div>
+                <a href="/chats" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:600;">View all</a>
+            </div>
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px;min-height:260px;max-height:420px;overflow-y:auto;">
+                {% if response %}
+                <div>
+                    <div class="msg-meta">🤖 AI Agent</div>
+                    <div class="{% if 'EMERGENCY' in response %}bubble-emergency{% else %}bubble-bot{% endif %}" style="{% if 'success' in response.lower() or 'uploaded' in response.lower() %}background:var(--green-bg);border-color:var(--green-border);color:#065f46;{% endif %}">{{ response }}</div>
+                </div>
+                {% endif %}
+                {% if chat_history %}
+                    {% for chat in chat_history[:4] %}
+                    <div style="text-align:right;">
+                        <div class="msg-meta" style="justify-content:flex-end;">🧑 You</div>
+                        <div class="bubble-user">{{ chat.user }}</div>
+                    </div>
+                    <div>
+                        <div class="msg-meta">🤖 AI Agent</div>
+                        <div class="{% if 'EMERGENCY' in chat.bot %}bubble-emergency{% else %}bubble-bot{% endif %}">{{ chat.bot }}</div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                {% if not response and not chat_history %}
+                <div class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <p>Upload a summary then ask about medicines, diet, or recovery.</p>
+                </div>
+                {% endif %}
+            </div>
+            <div style="padding:14px 20px;border-top:1px solid var(--border);">
+                <form method="POST" action="/" style="display:flex;gap:8px;">
+                    <input type="text" name="message" placeholder="Ask about medicines, diet, symptoms..." required
+                        style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none;background:var(--surface-2);color:var(--text-1);"
+                        onfocus="this.style.borderColor='var(--accent)'"
+                        onblur="this.style.borderColor='var(--border)'">
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="width:28px;height:28px;border-radius:8px;background:#fef3c7;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">🎤</span>
+                    Voice Assistant
+                </div>
+                <span id="voice-status-label" style="font-size:12px;color:var(--text-3);">Ready</span>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px;">🌐 Select Language</label>
+                    <select id="voiceLang" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-1);background:var(--surface-2);outline:none;cursor:pointer;">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-IN">English (India)</option>
+                        <option value="te-IN">Telugu</option>
+                        <option value="hi-IN">Hindi</option>
+                        <option value="ta-IN">Tamil</option>
+                        <option value="kn-IN">Kannada</option>
+                        <option value="ml-IN">Malayalam</option>
+                        <option value="mr-IN">Marathi</option>
+                        <option value="bn-IN">Bengali</option>
+                    </select>
+                </div>
+                <div style="text-align:center;padding:8px 0 16px;">
+                    <button id="voiceBtn" style="width:76px;height:76px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;font-size:30px;color:white;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 6px 20px rgba(37,99,235,0.3);">
+                        🎤
+                    </button>
+                    <p style="margin-top:12px;font-size:12px;color:var(--text-3);">Tap and speak your question</p>
+                </div>
+                <div id="voice-transcript" style="display:none;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;color:var(--text-2);margin-bottom:8px;">
+                    <strong>You said:</strong> <span id="transcript-text"></span>
+                </div>
+                <div id="voice-response" style="display:none;padding:10px 12px;background:var(--accent-light);border:1px solid #bfdbfe;border-radius:var(--radius-sm);font-size:12.5px;color:#1e40af;">
+                    <strong>AI:</strong> <span id="response-text"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+window.addEventListener('load', function() {
+    var btn = document.getElementById('voiceBtn');
+    var statusLabel = document.getElementById('voice-status-label');
+    var transcriptBox = document.getElementById('voice-transcript');
+    var transcriptSpan = document.getElementById('transcript-text');
+    var responseBox = document.getElementById('voice-response');
+    var responseSpan = document.getElementById('response-text');
+    var langSelect = document.getElementById('voiceLang');
+
+    if (!btn) { console.error('voiceBtn not found'); return; }
+    if (!statusLabel) { console.error('voice-status-label not found'); return; }
+
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+        btn.style.background = '#94a3b8';
+        statusLabel.textContent = 'Use Chrome browser';
+        statusLabel.style.color = '#ef4444';
+        console.log('SpeechRecognition not supported');
+        return;
+    }
+
+    console.log('Voice assistant ready');
+    var listening = false;
+
+    function setStatus(text, color) {
+        statusLabel.textContent = text;
+        statusLabel.style.color = color || '#94a3b8';
+    }
+
+    function resetBtn() {
+        btn.style.background = '#2563eb';
+        btn.textContent = '🎤';
+        listening = false;
+    }
+
+    btn.addEventListener('click', function() {
+        if (listening) { return; }
+
+        var lang = langSelect ? langSelect.value : 'en-US';
+        var rec = new SR();
+        rec.lang = lang;
+        rec.continuous = false;
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+
+        listening = true;
+        btn.style.background = '#ef4444';
+        btn.textContent = '⏹';
+        setStatus('Listening... speak now', '#ef4444');
+        console.log('Starting recognition, lang:', lang);
+
+        var timer = setTimeout(function() {
+            if (listening) {
+                try { rec.stop(); } catch(e) {}
+                setStatus('Timed out. Try again.', '#f59e0b');
+                resetBtn();
+            }
+        }, 7000);
+
+        try {
+            rec.start();
+        } catch(e) {
+            console.error('rec.start error:', e);
+            clearTimeout(timer);
+            setStatus('Could not start mic.', '#ef4444');
+            resetBtn();
+            return;
+        }
+
+        rec.onstart = function() {
+            console.log('Recognition started');
+            setStatus('Listening...', '#ef4444');
+        };
+
+        rec.onspeechstart = function() {
+            console.log('Speech detected');
+            setStatus('Speech detected...', '#10b981');
+        };
+
+        rec.onresult = function(event) {
+            clearTimeout(timer);
+            var text = event.results[0][0].transcript;
+            console.log('Transcript:', text);
+
+            if (transcriptSpan) transcriptSpan.textContent = text;
+            if (transcriptBox) transcriptBox.style.display = 'block';
+
+            btn.style.background = '#f59e0b';
+            btn.textContent = '⏳';
+            setStatus('Thinking...', '#f59e0b');
+
+            fetch('/voice_query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text, lang: lang })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                var reply = d.response || 'No response received.';
+                console.log('AI reply:', reply);
+
+                if (responseSpan) responseSpan.textContent = reply;
+                if (responseBox) responseBox.style.display = 'block';
+
+                var voices = window.speechSynthesis.getVoices();
+                var utt = new SpeechSynthesisUtterance(reply);
+                var matched = null;
+
+                for (var i = 0; i < voices.length; i++) {
+                    if (voices[i].lang === lang) { matched = voices[i]; break; }
+                }
+                if (!matched) {
+                    var prefix = lang.split('-')[0];
+                    for (var j = 0; j < voices.length; j++) {
+                        if (voices[j].lang.indexOf(prefix) === 0) { matched = voices[j]; break; }
+                    }
+                }
+                if (matched) { utt.voice = matched; utt.lang = matched.lang; }
+                else { utt.lang = lang; }
+
+                utt.rate = 0.9;
+                utt.volume = 1;
+                utt.onend = function() { setStatus('Ready'); };
+                utt.onerror = function(e) { console.error('Speech synth error:', e); setStatus('Ready'); };
+
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utt);
+                setStatus('Speaking...', '#10b981');
+            })
+            .catch(function(err) {
+                console.error('Fetch error:', err);
+                setStatus('Network error. Try again.', '#ef4444');
+            })
+            .finally(function() {
+                resetBtn();
+            });
+        };
+
+        rec.onerror = function(e) {
+            clearTimeout(timer);
+            console.error('Speech error:', e.error);
+            var msg = 'Error: ' + e.error;
+            if (e.error === 'no-speech') msg = 'No speech. Try again.';
+            if (e.error === 'not-allowed') msg = 'Mic blocked. Allow in settings.';
+            if (e.error === 'network') msg = 'Use http://localhost:5000';
+            if (e.error === 'audio-capture') msg = 'No microphone found.';
+            setStatus(msg, '#ef4444');
+            resetBtn();
+        };
+
+        rec.onend = function() {
+            clearTimeout(timer);
+            console.log('Recognition ended');
+            if (listening) { resetBtn(); setStatus('Ready'); }
+        };
+    });
+});
+</script>
+
+{% endblock %}

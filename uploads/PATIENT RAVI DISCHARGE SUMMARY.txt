@@ -1,0 +1,32 @@
+PATIENT DISCHARGE SUMMARY
+
+Patient Name: Ravi Kumar
+
+Age: 35
+
+Diagnosis:
+Type 2 Diabetes
+
+Procedure:
+Routine Diabetes Management
+
+Medications:
+
+1. Metformin 500mg - Twice Daily
+2. Glimepiride 1mg - Once Daily
+
+Diet Instructions:
+
+* Avoid sugary foods
+* Eat high-fiber foods
+* Drink plenty of water
+
+Follow-Up:
+15 July 2026
+
+Emergency Signs:
+
+* Severe dizziness
+* Loss of consciousness
+* Very high blood sugar
+* Difficulty breathing

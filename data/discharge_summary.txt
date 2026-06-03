@@ -1,0 +1,28 @@
+PATIENT DISCHARGE SUMMARY
+
+Patient Name: Shravan Kumar
+Age: 22
+
+Diagnosis:
+Acute Appendicitis
+
+Procedure:
+Laparoscopic Appendectomy
+
+Medications:
+1. Paracetamol 500mg - Twice Daily
+2. Amoxicillin 500mg - Three Times Daily
+
+Diet Instructions:
+- Soft foods for 5 days
+- Drink plenty of water
+- Avoid spicy foods
+
+Follow-Up:
+10 June 2026
+
+Emergency Signs:
+- Chest pain
+- Difficulty breathing
+- Severe bleeding
+- High fever

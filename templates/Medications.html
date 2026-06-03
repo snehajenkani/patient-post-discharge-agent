@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Medications — MediAgent{% endblock %}
+{% block page_title %}💊 Medications{% endblock %}
+{% block page_sub %}Prescribed medicines and dosage schedule{% endblock %}
+
+{% block content %}
+
+{% if med_list %}
+
+<!-- Stats Row -->
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="stat-card">
+        <div class="stat-icon">💊</div>
+        <div class="stat-label">Total Medications</div>
+        <div class="stat-value">{{ med_list|length }}</div>
+        <div class="stat-sub">Prescribed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-label">Taken Today</div>
+        <div class="stat-value">{{ med_reminders.values()|selectattr('==', 'equalto', True)|list|length }}</div>
+        <div class="stat-sub">Marked as taken</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-label">Follow-Up</div>
+        <div class="stat-value" style="font-size:15px;padding-top:6px;line-height:1.3;">{{ follow_up if follow_up else '—' }}</div>
+        <div class="stat-sub">Next appointment</div>
+    </div>
+</div>
+
+<!-- Medications List -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span style="width:28px;height:28px;border-radius:8px;background:#fff7ed;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">💊</span>
+            Prescribed Medications
+        </div>
+        <a href="/reset_reminders" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;">Reset All</a>
+    </div>
+    <div class="card-body">
+        {% for med in med_list %}
+        {% set is_taken = med_reminders.get(med.name, False) %}
+        <div style="display:flex;align-items:center;justify-content:space-between;
+            padding:16px;border-radius:var(--radius-sm);
+            border:1px solid {% if is_taken %}var(--green-border){% else %}var(--border){% endif %};
+            background:{% if is_taken %}var(--green-bg){% else %}var(--surface-2){% endif %};
+            margin-bottom:10px;transition:all 0.2s;">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <div style="width:44px;height:44px;border-radius:12px;
+                    background:{% if is_taken %}var(--green-bg){% else %}white{% endif %};
+                    border:1px solid {% if is_taken %}var(--green-border){% else %}var(--border){% endif %};
+                    display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💊</div>
+                <div>
+                    <div style="font-size:14px;font-weight:600;
+                        color:{% if is_taken %}var(--green){% else %}var(--text-1){% endif %};">{{ med.name }}</div>
+                    {% if med.schedule %}
+                    <div style="font-size:12px;color:var(--text-3);margin-top:2px;">{{ med.schedule }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="/toggle_reminder/{{ loop.index0 }}"
+                style="padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;
+                text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+                background:{% if is_taken %}var(--green){% else %}var(--accent){% endif %};
+                color:white;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                {% if is_taken %}✓ Taken{% else %}Mark Taken{% endif %}
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Diet Instructions -->
+{% if diet %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span style="width:28px;height:28px;border-radius:8px;background:#f0fdf4;display:inline-flex;align-items:center;justify-content:center;font-size:14px;">🥗</span>
+            Diet Instructions
+        </div>
+    </div>
+    <div class="card-body">
+        <pre style="white-space:pre-wrap;font-family:'DM Sans',sans-serif;font-size:13.5px;
+            line-height:1.8;color:var(--text-2);background:var(--surface-2);
+            padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);">{{ diet }}</pre>
+    </div>
+</div>
+{% endif %}
+
+<!-- Important Notice -->
+<div class="alert alert-blue" style="border-radius:var(--radius-sm);padding:14px 18px;">
+    <span style="font-size:18px;">ℹ️</span>
+    <div>
+        <div style="font-weight:600;margin-bottom:2px;">Important Reminder</div>
+        <div style="font-size:12.5px;">Always take medications as prescribed. Do not skip doses or stop without consulting your doctor.</div>
+    </div>
+</div>
+
+{% else %}
+
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">💊</div>
+            <p style="font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:6px;">No medications found</p>
+            <p>Upload a discharge summary to see your prescribed medications.</p>
+            <a href="/" class="btn btn-primary" style="margin-top:16px;display:inline-flex;">⬆ Upload Summary</a>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

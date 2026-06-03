@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Alerts — MediAgent{% endblock %}
+{% block page_title %}🔔 Alerts{% endblock %}
+{% block page_sub %}Emergency detections and important notifications{% endblock %}
+
+{% block content %}
+
+<!-- Emergency Signs from Summary -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">🚨 Emergency Warning Signs</div>
+        <span style="font-size:12px; color:var(--text-muted);">From discharge summary</span>
+    </div>
+    <div class="card-body">
+        {% if emergency_signs %}
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                {% for sign in emergency_signs %}
+                <div class="alert-banner alert-emergency">
+                    <span>⚠️</span>
+                    <span>{{ sign }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div style="margin-top:16px; padding:14px; background:var(--bg); border-radius:var(--radius-sm); font-size:13px; color:var(--text-secondary);">
+                If you experience any of the above symptoms, <strong>contact your doctor immediately</strong> or visit the nearest hospital.
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🔔</div>
+                <p>No emergency signs found.</p>
+                <p>Upload a discharge summary to see alerts.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Emergency Chats -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">🚑 Emergency Messages in Chat</div>
+        <span style="font-size:12px; color:var(--text-muted);">{{ emergency_count }} detected</span>
+    </div>
+    <div class="card-body">
+        {% if emergency_chats %}
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% for chat in emergency_chats %}
+                <div style="padding:14px; background:var(--emergency); border:1px solid var(--emergency-border); border-radius:var(--radius-sm);">
+                    <div style="font-size:12px; color:#b91c1c; font-weight:600; margin-bottom:6px;">🧑 You asked:</div>
+                    <div style="font-size:13px; color:var(--text-primary); margin-bottom:10px;">{{ chat.user }}</div>
+                    <div style="font-size:12px; color:#b91c1c; font-weight:600; margin-bottom:6px;">🤖 AI Response:</div>
+                    <div style="font-size:13px; color:#b91c1c; white-space:pre-wrap;">{{ chat.bot }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <p>No emergency messages in your chat history.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- General Info Alert -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">ℹ️ General Reminders</div>
+    </div>
+    <div class="card-body">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="alert-banner alert-info">
+                <span>💊</span>
+                <span>Take all medications as prescribed. Do not skip doses.</span>
+            </div>
+            <div class="alert-banner alert-info">
+                <span>📅</span>
+                <span>Your follow-up appointment is on <strong>{{ follow_up if follow_up else 'date not set' }}</strong>. Don't miss it.</span>
+            </div>
+            <div class="alert-banner alert-success">
+                <span>✅</span>
+                <span>You are on track with your recovery. Keep following the discharge instructions.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

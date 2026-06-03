@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Summaries — MediAgent{% endblock %}
+{% block page_title %}📋 Discharge Summary{% endblock %}
+{% block page_sub %}Full uploaded discharge document{% endblock %}
+
+{% block content %}
+
+{% if patient_name %}
+
+<!-- Patient Header Card -->
+<div class="card">
+    <div class="card-body" style="display:flex; align-items:center; gap:20px;">
+        <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent), #60a5fa); display:flex; align-items:center; justify-content:center; color:white; font-size:22px; font-weight:600; flex-shrink:0;">
+            {{ patient_name[0] }}
+        </div>
+        <div>
+            <div style="font-size:18px; font-weight:600; font-family:'Playfair Display',serif;">{{ patient_name }}</div>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">{{ diagnosis }} · Follow-up: {{ follow_up }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Sections -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <div class="card">
+        <div class="card-header"><div class="card-title">🩺 Diagnosis & Procedure</div></div>
+        <div class="card-body">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="padding:12px; background:var(--bg); border-radius:var(--radius-sm);">
+                    <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:4px;">Diagnosis</div>
+                    <div style="font-size:14px; font-weight:500;">{{ diagnosis if diagnosis else '—' }}</div>
+                </div>
+                <div style="padding:12px; background:var(--bg); border-radius:var(--radius-sm);">
+                    <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:4px;">Procedure</div>
+                    <div style="font-size:14px; font-weight:500;">{{ procedure if procedure else '—' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><div class="card-title">📅 Follow-Up</div></div>
+        <div class="card-body">
+            <div style="padding:12px; background:var(--accent-light); border-radius:var(--radius-sm); border:1px solid var(--accent);">
+                <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--accent); margin-bottom:4px;">Scheduled Date</div>
+                <div style="font-size:20px; font-weight:600; font-family:'Playfair Display',serif; color:var(--accent-dark);">{{ follow_up if follow_up else '—' }}</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Full Raw Summary -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📄 Full Discharge Summary</div>
+        <span style="font-size:12px; color:var(--text-muted);">Raw document</span>
+    </div>
+    <div class="card-body">
+        <pre style="white-space:pre-wrap; font-family:'DM Sans',sans-serif; font-size:13.5px; line-height:1.8; color:var(--text-primary); background:var(--bg); padding:20px; border-radius:var(--radius-sm);">{{ patient_info }}</pre>
+    </div>
+</div>
+
+{% else %}
+
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p>No discharge summary uploaded yet.</p>
+            <p style="margin-top:12px;"><a href="/" class="btn btn-primary">⬆ Upload Now</a></p>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -231,7 +231,7 @@
                 </div>
                 {% endif %}
                 {% if chat_history %}
-                    {% for chat in chat_history[:4] %}
+                {% for chat in chat_history[-4:] %}
                     <div style="text-align:right;">
                         <div class="msg-meta" style="justify-content:flex-end;">🧑 You</div>
                         <div class="bubble-user">{{ chat.user }}</div>
@@ -460,5 +460,11 @@ window.addEventListener('load', function() {
     });
 });
 </script>
+<script>
+    window.addEventListener('load', function() {
+        var chatDiv = document.querySelector('[style*="overflow-y:auto"]');
+        if (chatDiv) chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
+    </script>
 
 {% endblock %}

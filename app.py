@@ -173,7 +173,8 @@ Patient Question:
             except Exception:
                 response_text = "❌ Gemini API unavailable.\n\nYour quota may be exhausted. Please try again later."
 
-        chat_history.insert(0, {"user": user_message, "bot": response_text})
+        chat_history.append({"user": user_message, "bot": response_text})
+
         response_text = ""   # prevent double display
 
     return render_template("home.html", active_page="home", response=response_text, **get_context())
@@ -194,6 +195,10 @@ def clear_chats():
 @app.route("/alerts")
 def alerts():
     return render_template("alerts.html", active_page="alerts", **get_context())
+
+@app.route("/emergency")
+def emergency():
+    return render_template("emergency.html", active_page="alerts", **get_context())
 
 
 @app.route("/summaries")
@@ -283,7 +288,8 @@ Reply in {reply_language} only:
         except Exception:
             response_text = "Sorry, I could not connect to the AI. Please try again later."
 
-    chat_history.insert(0, {"user": f"🎤 {user_message}", "bot": response_text})
+    chat_history.append({"user": f"🎤 {user_message}", "bot": response_text})
+
     return jsonify({"response": response_text, "lang": lang})
 @app.route("/upload", methods=["POST"])
 def upload_file():

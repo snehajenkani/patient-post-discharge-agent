@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Emergency — MediAgent{% endblock %}
+{% block page_title %}🚨 Emergency Help{% endblock %}
+{% block page_sub %}Find nearby hospitals and get directions immediately{% endblock %}
+
+{% block content %}
+
+<!-- Emergency Banner -->
+<div style="background:#fef2f2;border:2px solid #ef4444;border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;gap:16px;">
+    <div style="font-size:36px;flex-shrink:0;">🚨</div>
+    <div>
+        <div style="font-size:16px;font-weight:700;color:#b91c1c;margin-bottom:4px;">Emergency Alert Active</div>
+        <div style="font-size:13px;color:#991b1b;">If this is a life-threatening emergency, call <strong>108</strong> (Ambulance) immediately. Use the tools below to find the nearest hospital.</div>
+    </div>
+    <a href="tel:108" style="margin-left:auto;flex-shrink:0;padding:10px 20px;background:#ef4444;color:white;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📞 Call 108</a>
+</div>
+
+<!-- Quick Call Buttons -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📞 Emergency Contacts</div>
+    </div>
+    <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <a href="tel:108" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:#fef2f2;border:1.5px solid #fecaca;border-radius:var(--radius-sm);text-decoration:none;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="font-size:28px;">🚑</div>
+                <div style="font-size:18px;font-weight:700;color:#b91c1c;">108</div>
+                <div style="font-size:12px;color:#991b1b;font-weight:600;">Ambulance</div>
+            </a>
+            <a href="tel:102" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:var(--radius-sm);text-decoration:none;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="font-size:28px;">🏥</div>
+                <div style="font-size:18px;font-weight:700;color:#c2410c;">102</div>
+                <div style="font-size:12px;color:#9a3412;font-weight:600;">Medical Helpline</div>
+            </a>
+            <a href="tel:112" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:var(--radius-sm);text-decoration:none;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="font-size:28px;">🆘</div>
+                <div style="font-size:18px;font-weight:700;color:#1d4ed8;">112</div>
+                <div style="font-size:12px;color:#1e40af;font-weight:600;">National Emergency</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Hospital Finder -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">🏥 Nearby Hospitals</div>
+        <button id="findBtn" onclick="findHospitals()" class="btn btn-primary" style="font-size:12px;padding:7px 14px;">
+            📍 Find Near Me
+        </button>
+    </div>
+    <div class="card-body">
+        <div id="location-status" style="font-size:13px;color:var(--text-3);margin-bottom:12px;display:none;"></div>
+
+        <!-- Hospital List -->
+        <div id="hospital-list" style="display:none;">
+            <div id="hospitals-container" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+        </div>
+
+        <!-- Map -->
+        <div id="map-container" style="display:none;">
+            <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:8px;">🗺 Map View</div>
+            <div id="map-frame" style="border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);"></div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" style="text-align:center;padding:40px;">
+            <div style="font-size:40px;margin-bottom:12px;">📍</div>
+            <div style="font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Find hospitals near you</div>
+            <div style="font-size:13px;color:var(--text-3);">Click "Find Near Me" to locate nearby hospitals using your GPS location.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps Directions -->
+<div class="card" id="directions-card" style="display:none;">
+    <div class="card-header">
+        <div class="card-title">🗺 Directions</div>
+        <span id="directions-hospital-name" style="font-size:12px;color:var(--text-3);"></span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <iframe id="directions-frame"
+            style="width:100%;height:420px;border:none;border-radius:0 0 var(--radius) var(--radius);"
+            allowfullscreen loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+</div>
+
+<script>
+var userLat = null;
+var userLng = null;
+
+function findHospitals() {
+    var btn = document.getElementById('findBtn');
+    var status = document.getElementById('location-status');
+    var emptyState = document.getElementById('empty-state');
+
+    btn.textContent = '⏳ Getting location...';
+    btn.disabled = true;
+    status.style.display = 'block';
+    status.textContent = 'Getting your location...';
+    emptyState.style.display = 'none';
+
+    if (!navigator.geolocation) {
+        status.textContent = '❌ Geolocation not supported. Please search manually.';
+        btn.textContent = '📍 Find Near Me';
+        btn.disabled = false;
+        showManualSearch();
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
+            status.textContent = '✅ Location found! Showing nearby hospitals...';
+            btn.textContent = '🔄 Refresh';
+            btn.disabled = false;
+            showHospitalsOnMap(userLat, userLng);
+            fetchNearbyHospitals(userLat, userLng);
+        },
+        function(err) {
+            var msg = '❌ Could not get location.';
+            if (err.code === 1) msg = '❌ Location access denied. Please allow location access in browser settings.';
+            if (err.code === 2) msg = '❌ Location unavailable. Try again.';
+            if (err.code === 3) msg = '❌ Location request timed out. Try again.';
+            status.textContent = msg;
+            btn.textContent = '📍 Find Near Me';
+            btn.disabled = false;
+            showManualSearch();
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+    );
+}
+
+function showHospitalsOnMap(lat, lng) {
+    var mapContainer = document.getElementById('map-container');
+    var mapFrame = document.getElementById('map-frame');
+    mapContainer.style.display = 'block';
+    mapFrame.innerHTML = '<iframe width="100%" height="300" style="border:none;" src="https://maps.google.com/maps?q=hospitals+near+' + lat + ',' + lng + '&output=embed&z=14"></iframe>';
+}
+
+function fetchNearbyHospitals(lat, lng) {
+    var hospitalList = document.getElementById('hospital-list');
+    var container = document.getElementById('hospitals-container');
+    hospitalList.style.display = 'block';
+
+    // Use Nominatim (OpenStreetMap) for hospital search — free, no API key needed
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=8&q=hospital&bounded=1&viewbox=' +
+        (lng - 0.05) + ',' + (lat + 0.05) + ',' + (lng + 0.05) + ',' + (lat - 0.05);
+
+    fetch(url, { headers: { 'Accept-Language': 'en' } })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">No hospitals found nearby. Try the Google Maps button above.</div>';
+            return;
+        }
+        container.innerHTML = '';
+        data.forEach(function(place, i) {
+            var name = place.display_name.split(',')[0];
+            var address = place.display_name.split(',').slice(1, 3).join(',').trim();
+            var hlat = parseFloat(place.lat);
+            var hlng = parseFloat(place.lon);
+            var dist = getDistanceKm(userLat, userLng, hlat, hlng);
+
+            var card = document.createElement('div');
+            card.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface-2);transition:all 0.2s;';
+            card.innerHTML =
+                '<div style="display:flex;align-items:center;gap:12px;">' +
+                '<div style="width:38px;height:38px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏥</div>' +
+                '<div>' +
+                '<div style="font-size:13px;font-weight:600;color:var(--text-1);">' + name + '</div>' +
+                '<div style="font-size:11px;color:var(--text-3);margin-top:2px;">' + address + '</div>' +
+                '<div style="font-size:11px;color:var(--accent);margin-top:2px;font-weight:600;">📍 ' + dist + ' km away</div>' +
+                '</div></div>' +
+                '<div style="display:flex;gap:8px;flex-shrink:0;">' +
+                '<button onclick="getDirections(' + hlat + ',' + hlng + ',\'' + name.replace(/'/g,"") + '\')" style="padding:7px 12px;border-radius:6px;background:var(--accent);color:white;border:none;cursor:pointer;font-size:12px;font-weight:600;">🗺 Directions</button>' +
+                '<a href="https://www.google.com/maps/search/?api=1&query=' + hlat + ',' + hlng + '" target="_blank" style="padding:7px 12px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);text-decoration:none;font-size:12px;font-weight:600;display:flex;align-items:center;">🌐 Maps</a>' +
+                '</div>';
+            container.appendChild(card);
+        });
+    })
+    .catch(function() {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Could not load hospital list. Use the map above to find hospitals.</div>';
+    });
+}
+
+function getDirections(hlat, hlng, name) {
+    var card = document.getElementById('directions-card');
+    var frame = document.getElementById('directions-frame');
+    var nameLabel = document.getElementById('directions-hospital-name');
+    card.style.display = 'block';
+    nameLabel.textContent = name;
+    if (userLat && userLng) {
+        frame.src = 'https://maps.google.com/maps?saddr=' + userLat + ',' + userLng + '&daddr=' + hlat + ',' + hlng + '&output=embed';
+    } else {
+        frame.src = 'https://maps.google.com/maps?q=' + hlat + ',' + hlng + '&output=embed';
+    }
+    card.scrollIntoView({ behavior: 'smooth' });
+}
+
+function getDistanceKm(lat1, lng1, lat2, lng2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+}
+
+function showManualSearch() {
+    var container = document.getElementById('hospitals-container');
+    var hospitalList = document.getElementById('hospital-list');
+    hospitalList.style.display = 'block';
+    container.innerHTML =
+        '<div style="padding:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);">' +
+        '<div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text-2);">Search manually on Google Maps:</div>' +
+        '<a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" class="btn btn-primary" style="text-decoration:none;">🌐 Open Google Maps</a>' +
+        '</div>';
+}
+</script>
+
+{% endblock %}
